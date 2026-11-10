@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+backend/node_modules/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+
+# Build files
+dist/
+
+# Uploaded test images
+backend/uploads/*
+!backend/uploads/.gitkeep
