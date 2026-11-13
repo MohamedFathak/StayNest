@@ -1,15 +1,10 @@
-
 import { db } from "../config/db.js";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
-
-// Find the backend uploads folder
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const uploadDirectory = path.join(__dirname, "../uploads");
-
-// Safely remove an image belonging to this application
 const removeImageFile = async (imagePath) => {
     if (
         !imagePath ||
@@ -31,8 +26,6 @@ const removeImageFile = async (imagePath) => {
         }
     }
 };
-
-// Remove a newly uploaded file if its database operation fails
 const removeNewUpload = async (file) => {
     if (!file?.path) return;
 
@@ -44,8 +37,6 @@ const removeNewUpload = async (file) => {
         }
     }
 };
-
-// ADD HOTEL
 export const addHotel = async (req, res) => {
     try {
         const {
@@ -128,8 +119,6 @@ export const addHotel = async (req, res) => {
         });
     }
 };
-
-// GET ALL HOTELS
 export const getAllHotels = async (req, res) => {
     try {
         const {
@@ -254,8 +243,6 @@ export const getHotelById = async (req, res) => {
         });
     }
 };
-
-// UPDATE HOTEL
 export const updateHotel = async (req, res) => {
     try {
         const { id } = req.params;
@@ -313,8 +300,6 @@ export const updateHotel = async (req, res) => {
                 message: "Please enter valid location and price details.",
             });
         }
-
-        // Get the previous image before updating
         const existingHotel = await db.query(
             "SELECT image_path FROM hotels WHERE id = $1",
             [id]
@@ -356,8 +341,6 @@ export const updateHotel = async (req, res) => {
                 id,
             ]
         );
-
-        // Delete the old image only after a successful database update
         if (req.file && oldImagePath) {
             await removeImageFile(oldImagePath);
         }
@@ -378,8 +361,6 @@ export const updateHotel = async (req, res) => {
         });
     }
 };
-
-// DELETE HOTEL
 export const deleteHotel = async (req, res) => {
     try {
         const { id } = req.params;
@@ -390,8 +371,6 @@ export const deleteHotel = async (req, res) => {
                 message: "Invalid hotel ID.",
             });
         }
-
-        // Delete the database record and retrieve its image path
         const result = await db.query(
             "DELETE FROM hotels WHERE id = $1 RETURNING id, image_path",
             [id]
@@ -403,8 +382,6 @@ export const deleteHotel = async (req, res) => {
                 message: "Hotel not found.",
             });
         }
-
-        // Remove the associated image from the uploads folder
         await removeImageFile(result.rows[0].image_path);
 
         res.status(200).json({

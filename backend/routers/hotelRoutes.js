@@ -1,10 +1,8 @@
-
 import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { fileURLToPath } from "url";
-
 import {
     addHotel,
     getAllHotels,
@@ -12,6 +10,10 @@ import {
     updateHotel,
     deleteHotel,
 } from "../controllers/hotelController.js";
+import {
+    authenticateToken,
+    requireAdmin,
+} from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -20,12 +22,10 @@ const __dirname = path.dirname(__filename);
 
 const uploadDirectory = path.join(__dirname, "../uploads");
 
-// Create uploads folder if it does not exist
 if (!fs.existsSync(uploadDirectory)) {
     fs.mkdirSync(uploadDirectory, { recursive: true });
 }
 
-// Allowed image formats
 const allowedExtensions = [".jpg", ".jpeg", ".png", ".webp"];
 
 const allowedMimeTypes = [
@@ -34,7 +34,6 @@ const allowedMimeTypes = [
     "image/webp",
 ];
 
-// Configure image storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         cb(null, uploadDirectory);
@@ -50,7 +49,6 @@ const storage = multer.diskStorage({
     },
 });
 
-// Validate uploaded image
 const fileFilter = (req, file, cb) => {
     const extension = path.extname(file.originalname).toLowerCase();
 
@@ -68,18 +66,16 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Configure Multer
 const upload = multer({
     storage,
     fileFilter,
 
     limits: {
-        fileSize: 2 * 1024 * 1024, // 2 MB
+        fileSize: 2 * 1024 * 1024,
         files: 1,
     },
 });
 
-// Handle upload errors with clear responses
 const uploadImage = (req, res, next) => {
     upload.single("image")(req, res, (error) => {
         if (error) {
@@ -114,16 +110,38 @@ const uploadImage = (req, res, next) => {
     });
 };
 
-// Hotel API routes
-router.post("/", uploadImage, addHotel);
+// Admin only: Add hotel
+router.post(
+    "/",
+    authenticateToken,
+    requireAdmin,
+    uploadImage,
+    addHotel
+);
 
+// Public: View all hotels
 router.get("/", getAllHotels);
 
+// Public: View individual hotel details
 router.get("/:id", getHotelById);
 
-router.put("/:id", uploadImage, updateHotel);
+// Admin only: Update hotel
+router.put(
+    "/:id",
+    authenticateToken,
+    requireAdmin,
+    uploadImage,
+    updateHotel
+);
 
-router.delete("/:id", deleteHotel);
+// Admin only: Delete hotel
+router.delete(
+    "/:id",
+    authenticateToken,
+    requireAdmin,
+    deleteHotel
+);
 
 export default router;
+
 

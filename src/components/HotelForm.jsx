@@ -11,10 +11,8 @@ const HotelForm = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const { id } = useParams();
-
     const hotels = useSelector((state) => state.hotels.hotels);
     const loading = useSelector((state) => state.hotels.loading);
-
     const existingHotel = id
         ? hotels.find((hotel) => String(hotel.id) === id)
         : null;
@@ -26,6 +24,7 @@ const HotelForm = () => {
     const [imageFile, setImageFile] = useState(null);
     const [preview, setPreview] = useState("");
     const [error, setError] = useState("");
+
     useEffect(() => {
         if (id && existingHotel) {
             setTitle(existingHotel.title || "");
@@ -36,13 +35,16 @@ const HotelForm = () => {
             setPreview(existingHotel.image || "");
         }
     }, [id, existingHotel]);
+
     useEffect(() => {
         if (id && !existingHotel) {
             dispatch(fetchHotels({ limit: 100 }));
         }
     }, [id, existingHotel, dispatch]);
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
+
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
@@ -56,12 +58,14 @@ const HotelForm = () => {
             e.target.value = "";
             return;
         }
+
         setError("");
         setImageFile(file);
 
         const imagePreview = URL.createObjectURL(file);
         setPreview(imagePreview);
     };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError("");
@@ -139,7 +143,14 @@ const HotelForm = () => {
 
             navigate("/");
         } catch (error) {
-            setError(error || "Unable to save hotel. Please try again.");
+            const errorMessage =
+                typeof error === "string"
+                    ? error
+                    : error?.message ||
+                      error?.response?.data?.message ||
+                      "Unable to save hotel. Please try again.";
+
+            setError(errorMessage);
         }
     };
 
@@ -173,7 +184,6 @@ const HotelForm = () => {
 
     return (
         <>
-            {/* SEO Metadata */}
             <Helmet>
                 <title>
                     {id ? "Edit Hotel | StayNest" : "Add Hotel | StayNest"}
@@ -377,6 +387,8 @@ const HotelForm = () => {
         </>
     );
 };
+
 export default HotelForm;
+
 
 

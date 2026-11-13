@@ -1,13 +1,20 @@
 import React, { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
-
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../redux/slices/authSlice";
 const Navbar = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-
     const location = useLocation();
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const { user, isAuthenticated } = useSelector(
+        (state) => state.auth
+    );
 
-    
+    const isAdmin = user?.role === "admin";
+
+    // Handle navbar scroll effect
     useEffect(() => {
         const handleScroll = () => {
             setIsScrolled(window.scrollY > 20);
@@ -20,10 +27,26 @@ const Navbar = () => {
         };
     }, []);
 
-    
+    // Close mobile menu when route changes
     useEffect(() => {
         setIsMenuOpen(false);
     }, [location.pathname]);
+
+    // Logout
+    const handleLogout = () => {
+        // Remove saved authentication data
+        localStorage.removeItem("staynest_token");
+        localStorage.removeItem("staynest_user");
+
+        // Clear Redux authentication state
+        dispatch(logout());
+
+        // Close mobile menu
+        setIsMenuOpen(false);
+
+        // Redirect to login
+        navigate("/login", { replace: true });
+    };
 
     const navLinks = [
         { name: "Home", path: "/" },
@@ -63,14 +86,49 @@ const Navbar = () => {
                     ))}
                 </div>
 
-                {/* Desktop Add Hotel Button */}
-                <div className="hidden md:block">
-                    <Link
-                        to="/add-hotel"
-                        className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
-                    >
-                        + Add Hotel
-                    </Link>
+                {/* Desktop Authentication and Role Actions */}
+                <div className="hidden items-center gap-3 md:flex">
+
+                    {!isAuthenticated ? (
+                        <>
+                            <Link
+                                to="/login"
+                                className="rounded-full px-5 py-3 text-sm font-semibold text-slate-700 transition hover:text-blue-600"
+                            >
+                                Login
+                            </Link>
+
+                            <Link
+                                to="/register"
+                                className="rounded-full bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+                            >
+                                Register
+                            </Link>
+                        </>
+                    ) : (
+                        <>
+                            {isAdmin && (
+                                <Link
+                                    to="/add-hotel"
+                                    className="rounded-full bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                                >
+                                    + Add Hotel
+                                </Link>
+                            )}
+
+                            <span className="text-sm font-semibold text-slate-700">
+                                {user?.name} ({user?.role})
+                            </span>
+
+                            <button
+                                type="button"
+                                onClick={handleLogout}
+                                className="rounded-full border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+                            >
+                                Logout
+                            </button>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile Menu Button */}
@@ -117,6 +175,7 @@ const Navbar = () => {
             {isMenuOpen && (
                 <div className="border-t border-slate-200 bg-white px-6 py-5 shadow-lg md:hidden">
                     <div className="flex flex-col gap-5">
+
                         {navLinks.map((link) => (
                             <Link
                                 key={link.name}
@@ -128,20 +187,57 @@ const Navbar = () => {
                             </Link>
                         ))}
 
-                        <Link
-                            to="/add-hotel"
-                            onClick={() => setIsMenuOpen(false)}
-                            className="rounded-lg bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
-                        >
-                            + Add Hotel
-                        </Link>
+                        {!isAuthenticated ? (
+                            <>
+                                <Link
+                                    to="/login"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="text-sm font-semibold text-slate-700"
+                                >
+                                    Login
+                                </Link>
+
+                                <Link
+                                    to="/register"
+                                    onClick={() => setIsMenuOpen(false)}
+                                    className="rounded-lg bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
+                                >
+                                    Register
+                                </Link>
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-sm font-semibold text-slate-700">
+                                    {user?.name} ({user?.role})
+                                </span>
+
+                                {isAdmin && (
+                                    <Link
+                                        to="/add-hotel"
+                                        onClick={() => setIsMenuOpen(false)}
+                                        className="rounded-lg bg-blue-600 px-5 py-3 text-center text-sm font-semibold text-white transition hover:bg-blue-700"
+                                    >
+                                        + Add Hotel
+                                    </Link>
+                                )}
+
+                                <button
+                                    type="button"
+                                    onClick={handleLogout}
+                                    className="rounded-lg border border-slate-300 px-5 py-3 text-sm font-semibold text-slate-700"
+                                >
+                                    Logout
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             )}
         </header>
     );
 };
-
 export default Navbar;
+
+
 
 

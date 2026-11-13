@@ -5,19 +5,31 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { db } from "./config/db.js";
 import hotelRoutes from "./routers/hotelRoutes.js";
+import authRoutes from "./routers/authRoutes.js";
+
 const app = express();
+
 app.use(cors());
 app.use(express.json());
+
 const currentFile = fileURLToPath(import.meta.url);
 const currentFolder = path.dirname(currentFile);
+
 app.use(
     "/uploads",
     express.static(path.join(currentFolder, "uploads"))
 );
+
+// Hotel routes
 app.use("/api/hotels", hotelRoutes);
+
+// Authentication routes
+app.use("/api/auth", authRoutes);
+
 app.get("/", (req, res) => {
     res.send("StayNest Backend is running!");
 });
+
 app.get("/api/db-test", async (req, res) => {
     try {
         const result = await db.query("SELECT NOW()");
@@ -36,6 +48,7 @@ app.get("/api/db-test", async (req, res) => {
         });
     }
 });
+
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
@@ -53,5 +66,6 @@ const startServer = async () => {
 };
 
 startServer();
+
 
 

@@ -1,5 +1,3 @@
-
-
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useParams } from "react-router-dom";
@@ -8,7 +6,6 @@ import {
     fetchHotelById,
     clearSelectedHotel,
 } from "../redux/slices/hotelSlice";
-
 const HotelDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();
@@ -19,7 +16,6 @@ const HotelDetails = () => {
             (item) => String(item.id) === id
         )
     );
-
     const selectedHotel = useSelector(
         (state) => state.hotels.selectedHotel
     );

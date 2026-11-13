@@ -1,14 +1,14 @@
 # StayNest – Hotel Management System
 
-A full-stack hotel management web application developed using the MERN-style frontend workflow with React and Redux, Node.js, Express.js and PostgreSQL.
+A full-stack Hotel Management System built using **React.js, Redux Toolkit, Node.js, Express.js and PostgreSQL**.
 
-StayNest allows users to add, view, update, delete, search and filter hotel information through a responsive web interface.
+StayNest provides a responsive platform for managing hotel information, searching hotels, filtering by price, viewing hotel details and managing hotel records with role-based access control.
 
 ## Project Overview
 
-StayNest is designed to simplify hotel information management through a user-friendly interface and RESTful backend APIs.
+StayNest simplifies hotel information management through a user-friendly interface and RESTful backend APIs.
 
-The application stores hotel information in a PostgreSQL database and supports image uploads, location details and interactive map viewing.
+The application uses PostgreSQL for persistent data storage and supports hotel image uploads, location details, authentication and role-based permissions.
 
 ## Technologies Used
 
@@ -25,30 +25,58 @@ The application stores hotel information in a PostgreSQL database and supports i
 ### Backend
 - Node.js
 - Express.js
-- REST API
-- Multer for image uploads
+- REST APIs
 - PostgreSQL
 - pg (PostgreSQL client)
+- Multer (Image Upload)
+- bcrypt (Password Hashing)
+- JSON Web Token (JWT)
 - dotenv
 - CORS
 
-## Features
+## User Roles
 
-- Add new hotel details.
-- View all available hotels.
-- Update existing hotel information.
-- Delete hotels with confirmation.
+StayNest supports three access levels.
+
+### 1. Admin
+- Login and logout.
+- Add new hotels.
+- Edit existing hotel information.
+- Delete hotels.
+- View and manage hotel listings.
+
+### 2. User
+- Register and login.
+- View available hotels.
+- Search hotels by title.
+- Filter hotels by price.
+- View individual hotel details.
+- Cannot add, edit or delete hotels.
+
+### 3. Guest
+- Browse available hotels without logging in.
+- Search and filter hotel listings.
+- View individual hotel details.
+- Cannot access hotel management features.
+
+## Key Features
+
+- Admin and User authentication.
+- Role-based access control.
+- Password hashing using bcrypt.
+- JWT-based API authentication.
+- Add, view, update and delete hotel information.
 - Upload hotel images with preview.
-- Validate image type and file size.
+- Image type and file-size validation.
 - Search hotels by title.
 - Filter hotels by minimum and maximum price.
 - Server-side pagination.
-- View individual hotel details.
-- Display hotel locations using Google Maps.
-- Validate hotel price and geographical coordinates.
-- Automatically remove unused hotel images when replacing or deleting them.
-- SEO metadata using React Helmet Async.
+- Individual hotel details page.
+- Hotel location display using geographical coordinates.
+- Input validation for price, latitude and longitude.
+- Automatic cleanup of replaced or deleted hotel images.
 - Responsive user interface.
+- SEO metadata using React Helmet Async.
 
 ## Project Structure
 
@@ -60,52 +88,93 @@ StayNest/
 │   │   └── db.js
 │   │
 │   ├── controllers/
+│   │   ├── authController.js
 │   │   └── hotelController.js
 │   │
+│   ├── database/
+│   │   └── schema.sql
+│   │
+│   ├── middleware/
+│   │   └── authMiddleware.js
+│   │
 │   ├── routers/
+│   │   ├── authRoutes.js
 │   │   └── hotelRoutes.js
 │   │
 │   ├── uploads/
-│   ├── .env
+│   │   └── .gitkeep
+│   │
+│   ├── .env.example
 │   ├── package.json
 │   └── server.js
 │
+├── public/
+│   └── favicon.svg
+│
 ├── src/
 │   ├── components/
+│   │   ├── AdminRoute.jsx
 │   │   ├── HotelForm.jsx
-│   │   └── Navbar.jsx
+│   │   ├── Navbar.jsx
+│   │   └── ProtectedRoute.jsx
 │   │
 │   ├── pages/
 │   │   ├── Home.jsx
-│   │   └── HotelDetails.jsx
+│   │   ├── HotelDetails.jsx
+│   │   ├── Login.jsx
+│   │   └── Register.jsx
 │   │
 │   ├── redux/
 │   │   ├── slices/
+│   │   │   ├── authSlice.js
 │   │   │   └── hotelSlice.js
 │   │   └── store.js
 │   │
 │   ├── services/
+│   │   ├── authService.js
 │   │   └── hotelService.js
 │   │
 │   ├── App.jsx
-│   └── main.jsx
+│   ├── main.jsx
+│   └── index.css
 │
 ├── index.html
 ├── package.json
+├── .gitignore
 └── README.md
 ```
 
 ## Database Configuration
 
-StayNest uses PostgreSQL for persistent hotel data storage.
+StayNest uses PostgreSQL for storing user accounts and hotel information.
 
-Create a PostgreSQL database named:
+### 1. Create the Database
+
+Create a PostgreSQL database named `staynest_db`.
 
 ```sql
 CREATE DATABASE staynest_db;
 ```
 
-Configure the backend environment variables in `backend/.env`:
+### 2. Create Database Tables
+
+The SQL schema is available at:
+
+`backend/database/schema.sql`
+
+Execute the schema from the project root:
+
+```bash
+psql -U postgres -d staynest_db -f backend/database/schema.sql
+```
+
+This creates the required `users` and `hotels` tables.
+
+### 3. Configure Environment Variables
+
+Create a `.env` file inside the `backend` directory.
+
+Configure the following variables:
 
 ```env
 DB_HOST=localhost
@@ -113,12 +182,15 @@ DB_PORT=5432
 DB_NAME=staynest_db
 DB_USER=postgres
 DB_PASSWORD=your_postgresql_password
+
 PORT=5000
+JWT_SECRET=your_long_random_jwt_secret
+ADMIN_SETUP_KEY=your_admin_setup_secret
 ```
 
-Replace `your_postgresql_password` with your local PostgreSQL password.
+Replace the placeholder values with your local configuration.
 
-The backend expects the hotel table to be created in PostgreSQL with the columns used by the hotel controller.
+**Important:** Never upload your actual `.env` file, database password, JWT secret or Admin setup key to GitHub. Use `.env.example` as the configuration template.
 
 ## Installation and Setup
 
@@ -130,6 +202,8 @@ cd StayNest
 ```
 
 ### 2. Install Frontend Dependencies
+
+From the project root:
 
 ```bash
 npm install
@@ -144,21 +218,28 @@ npm install
 
 ### 4. Configure Environment Variables
 
-Create `backend/.env` using the database configuration described above.
+Create `backend/.env` using the configuration described in the Database Configuration section.
 
-### 5. Start the Backend
+### 5. Configure PostgreSQL
 
-From the backend folder:
+- Start PostgreSQL.
+- Create the `staynest_db` database.
+- Execute `backend/database/schema.sql`.
+- Ensure the database credentials match your `.env` file.
+
+### 6. Start the Backend
+
+From the backend directory:
 
 ```bash
-npm run dev
+npm start
 ```
 
 The backend server runs at:
 
 `http://localhost:5000`
 
-### 6. Start the Frontend
+### 7. Start the Frontend
 
 Open another terminal in the project root:
 
@@ -172,21 +253,39 @@ The frontend runs at:
 
 ## API Endpoints
 
-Base URL: `http://localhost:5000/api/hotels`
+### Hotel APIs
+
+Base URL:
+
+`http://localhost:5000/api/hotels`
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| POST | `/api/hotels` | Add a hotel | Admin |
+| GET | `/api/hotels` | Retrieve hotels | Public |
+| GET | `/api/hotels/:id` | Retrieve one hotel | Public |
+| PUT | `/api/hotels/:id` | Update a hotel | Admin |
+| DELETE | `/api/hotels/:id` | Delete a hotel | Admin |
+
+### Authentication APIs
+
+Base URL:
+
+`http://localhost:5000/api/auth`
 
 | Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/hotels` | Add a hotel |
-| GET | `/api/hotels` | Retrieve hotels |
-| GET | `/api/hotels/:id` | Retrieve one hotel |
-| PUT | `/api/hotels/:id` | Update a hotel |
-| DELETE | `/api/hotels/:id` | Delete a hotel |
+| POST | `/register` | Register a normal user |
+| POST | `/login` | Authenticate a user |
+| POST | `/create-admin` | Initial Admin account setup |
 
-### Supported Query Parameters
+Admin creation is protected by an Admin setup key. The setup endpoint should be disabled after the initial Admin account has been created.
+
+### Supported Hotel Query Parameters
 
 The hotel listing endpoint supports:
 
-- `search` – Search by hotel title.
+- `search` – Search hotels by title.
 - `minPrice` – Minimum hotel price.
 - `maxPrice` – Maximum hotel price.
 - `page` – Pagination page number.
@@ -194,30 +293,448 @@ The hotel listing endpoint supports:
 
 Example:
 
-`http://localhost:5000/api/hotels?search=royal&page=1&limit=6`
+```text
+http://localhost:5000/api/hotels?search=royal&page=1&limit=6
+```
 
 ## Image Upload
 
 - Hotel images are uploaded using Multer.
-- Uploaded files are stored in the backend uploads directory.
+- Uploaded files are stored in the backend `uploads` directory.
 - Image paths are stored in PostgreSQL.
-- Images are validated for supported formats and a maximum file size of 2 MB.
+- Supported image formats include JPG, JPEG, PNG and WEBP.
+- Maximum image size is 2 MB.
 - Old image files are cleaned up when replaced or deleted.
+
+## Testing and Validation
+
+StayNest was tested using frontend interactions, backend APIs, Postman and PostgreSQL.
+
+### Hotel CRUD Testing
+
+# StayNest – Hotel Management System
+
+A full-stack Hotel Management System built using **React.js, Redux Toolkit, Node.js, Express.js and PostgreSQL**.
+
+StayNest provides a responsive platform for managing hotel information, searching hotels, filtering by price, viewing hotel details and managing hotel records with role-based access control.
+
+## Project Overview
+
+StayNest simplifies hotel information management through a user-friendly interface and RESTful backend APIs.
+
+The application uses PostgreSQL for persistent data storage and supports hotel image uploads, location details, authentication and role-based permissions.
+
+## Technologies Used
+
+### Frontend
+- React.js
+- Redux Toolkit
+- React Router DOM
+- HTML5
+- CSS3
+- Tailwind CSS
+- React Helmet Async
+- Vite
+
+### Backend
+- Node.js
+- Express.js
+- REST APIs
+- PostgreSQL
+- pg (PostgreSQL client)
+- Multer (Image Upload)
+- bcrypt (Password Hashing)
+- JSON Web Token (JWT)
+- dotenv
+- CORS
+
+## User Roles
+
+StayNest supports three access levels.
+
+### 1. Admin
+- Login and logout.
+- Add new hotels.
+- Edit existing hotel information.
+- Delete hotels.
+- View and manage hotel listings.
+
+### 2. User
+- Register and login.
+- View available hotels.
+- Search hotels by title.
+- Filter hotels by price.
+- View individual hotel details.
+- Cannot add, edit or delete hotels.
+
+### 3. Guest
+- Browse available hotels without logging in.
+- Search and filter hotel listings.
+- View individual hotel details.
+- Cannot access hotel management features.
+
+## Key Features
+
+- Admin and User authentication.
+- Role-based access control.
+- Password hashing using bcrypt.
+- JWT-based API authentication.
+- Add, view, update and delete hotel information.
+- Upload hotel images with preview.
+- Image type and file-size validation.
+- Search hotels by title.
+- Filter hotels by minimum and maximum price.
+- Server-side pagination.
+- Individual hotel details page.
+- Hotel location display using geographical coordinates.
+- Input validation for price, latitude and longitude.
+- Automatic cleanup of replaced or deleted hotel images.
+- Responsive user interface.
+- SEO metadata using React Helmet Async.
+
+## Project Structure
+
+```text
+StayNest/
+│
+├── backend/
+│   ├── config/
+│   │   └── db.js
+│   │
+│   ├── controllers/
+│   │   ├── authController.js
+│   │   └── hotelController.js
+│   │
+│   ├── database/
+│   │   └── schema.sql
+│   │
+│   ├── middleware/
+│   │   └── authMiddleware.js
+│   │
+│   ├── routers/
+│   │   ├── authRoutes.js
+│   │   └── hotelRoutes.js
+│   │
+│   ├── uploads/
+│   │   └── .gitkeep
+│   │
+│   ├── .env.example
+│   ├── package.json
+│   └── server.js
+│
+├── public/
+│   └── favicon.svg
+│
+├── src/
+│   ├── components/
+│   │   ├── AdminRoute.jsx
+│   │   ├── HotelForm.jsx
+│   │   ├── Navbar.jsx
+│   │   └── ProtectedRoute.jsx
+│   │
+│   ├── pages/
+│   │   ├── Home.jsx
+│   │   ├── HotelDetails.jsx
+│   │   ├── Login.jsx
+│   │   └── Register.jsx
+│   │
+│   ├── redux/
+│   │   ├── slices/
+│   │   │   ├── authSlice.js
+│   │   │   └── hotelSlice.js
+│   │   └── store.js
+│   │
+│   ├── services/
+│   │   ├── authService.js
+│   │   └── hotelService.js
+│   │
+│   ├── App.jsx
+│   ├── main.jsx
+│   └── index.css
+│
+├── index.html
+├── package.json
+├── .gitignore
+└── README.md
+```
+
+## Database Configuration
+
+StayNest uses PostgreSQL for storing user accounts and hotel information.
+
+### 1. Create the Database
+
+Create a PostgreSQL database named `staynest_db`.
+
+```sql
+CREATE DATABASE staynest_db;
+```
+
+### 2. Create Database Tables
+
+The SQL schema is available at:
+
+`backend/database/schema.sql`
+
+Execute the schema from the project root:
+
+```bash
+psql -U postgres -d staynest_db -f backend/database/schema.sql
+```
+
+This creates the required `users` and `hotels` tables.
+
+### 3. Configure Environment Variables
+
+Create a `.env` file inside the `backend` directory.
+
+Configure the following variables:
+
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=staynest_db
+DB_USER=postgres
+DB_PASSWORD=your_postgresql_password
+
+PORT=5000
+JWT_SECRET=your_long_random_jwt_secret
+ADMIN_SETUP_KEY=your_admin_setup_secret
+```
+
+Replace the placeholder values with your local configuration.
+
+**Important:** Never upload your actual `.env` file, database password, JWT secret or Admin setup key to GitHub. Use `.env.example` as the configuration template.
+
+## Installation and Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone YOUR_GITHUB_REPOSITORY_URL
+cd StayNest
+```
+
+### 2. Install Frontend Dependencies
+
+From the project root:
+
+```bash
+npm install
+```
+
+### 3. Install Backend Dependencies
+
+```bash
+cd backend
+npm install
+```
+
+### 4. Configure Environment Variables
+
+Create `backend/.env` using the configuration described in the Database Configuration section.
+
+### 5. Configure PostgreSQL
+
+- Start PostgreSQL.
+- Create the `staynest_db` database.
+- Execute `backend/database/schema.sql`.
+- Ensure the database credentials match your `.env` file.
+
+### 6. Start the Backend
+
+From the backend directory:
+
+```bash
+npm start
+```
+
+The backend server runs at:
+
+`http://localhost:5000`
+
+### 7. Start the Frontend
+
+Open another terminal in the project root:
+
+```bash
+npm run dev
+```
+
+The frontend runs at:
+
+`http://localhost:5173`
+
+## API Endpoints
+
+### Hotel APIs
+
+Base URL:
+
+`http://localhost:5000/api/hotels`
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| POST | `/api/hotels` | Add a hotel | Admin |
+| GET | `/api/hotels` | Retrieve hotels | Public |
+| GET | `/api/hotels/:id` | Retrieve one hotel | Public |
+| PUT | `/api/hotels/:id` | Update a hotel | Admin |
+| DELETE | `/api/hotels/:id` | Delete a hotel | Admin |
+
+### Authentication APIs
+
+Base URL:
+
+`http://localhost:5000/api/auth`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| POST | `/register` | Register a normal user |
+| POST | `/login` | Authenticate a user |
+| POST | `/create-admin` | Initial Admin account setup |
+
+Admin creation is protected by an Admin setup key. The setup endpoint should be disabled after the initial Admin account has been created.
+
+### Supported Hotel Query Parameters
+
+The hotel listing endpoint supports:
+
+- `search` – Search hotels by title.
+- `minPrice` – Minimum hotel price.
+- `maxPrice` – Maximum hotel price.
+- `page` – Pagination page number.
+- `limit` – Number of hotels per page.
+
+Example:
+
+```text
+http://localhost:5000/api/hotels?search=royal&page=1&limit=6
+```
+
+## Image Upload
+
+- Hotel images are uploaded using Multer.
+- Uploaded files are stored in the backend `uploads` directory.
+- Image paths are stored in PostgreSQL.
+- Supported image formats include JPG, JPEG, PNG and WEBP.
+- Maximum image size is 2 MB.
+- Old image files are cleaned up when replaced or deleted.
+
+## Testing and Validation
+
+StayNest was tested using frontend interactions, backend APIs, Postman and PostgreSQL.
+
+### Hotel CRUD Testing
+
+| Test ID | Test Scenario | Expected Result | Status |
+|---|---|---|---|
+| TC01 | Add hotel with valid details | Hotel created successfully | PASS |
+| TC02 | Add hotel without hotel title | Validation error displayed | PASS |
+| TC03 | Add hotel without description | Validation error displayed | PASS |
+| TC04 | Add hotel with negative price | Input rejected | PASS |
+| TC05 | Add hotel with zero price | Input rejected | PASS |
+| TC06 | Add hotel with valid latitude and longitude | Hotel saved | PASS |
+| TC07 | Enter invalid latitude | Input rejected | PASS |
+| TC08 | Enter invalid longitude | Input rejected | PASS |
+| TC09 | Edit an existing hotel | Hotel information updated | PASS |
+| TC10 | Delete an existing hotel | Hotel deleted successfully | PASS |
+| TC11 | Delete a non-existent hotel | Hotel Not Found response | PASS |
+
+**CRUD Testing Summary**
+- Total test cases: 11
+- Passed: 11
+- Failed: 0
+
+### Authentication and Authorization Testing
+
+| Test ID |        Test Scenario           |  Expected Result        |Status|
+| AUTH01  |        Admin login             | Successful login        | PASS |
+| AUTH02  |    User registration           | User account created    | PASS |
+| AUTH03  |        User login              |  Successful login       | PASS |
+| AUTH04  |   Admin creates hotel          |   Hotel created         | PASS |
+| AUTH05  |   Admin updates hotel          |   Hotel updated         | PASS |
+| AUTH06  |   Admin deletes hotel          | Hotel and image deleted | PASS |
+| AUTH07  | User attempts to create hotel  |     Access denied       | PASS |
+| AUTH08  | User attempts to update hotel  |     Access denied       | PASS |
+| AUTH09  | User attempts to delete hotel  |     Access denied       | PASS |
+| AUTH10  | Guest views all hotels         | Public access allowed   | PASS |
+| AUTH11  | Guest views hotel details      | Public access allowed   | PASS |
+
+**Authentication Testing Summary**
+- Total test cases: 11
+- Passed: 11
+- Failed: 0
+
+### Testing Approach
+
+- Frontend form validation.
+- Backend API testing using Postman.
+- PostgreSQL data verification.
+- Image upload and validation.
+- Hotel CRUD operation testing.
+- Search, filtering and pagination testing.
+- Authentication and role-based authorization testing.
 
 ## Future Improvements
 
-- Deploy the frontend and backend.
+- Deploy frontend and backend.
 - Configure production database hosting.
 - Add automated testing.
-- Improve application security and production error handling.
+- Improve production monitoring and error handling.
 
 ## Author
 
-Developed as a full-stack web development project.
-
-**Project Name:** StayNest  
+**Project Name:** StayNest – Hotel Management System  
 **Domain:** Full-Stack Web Development  
 **Frontend:** React.js and Redux Toolkit  
 **Backend:** Node.js and Express.js  
 **Database:** PostgreSQL
+**CRUD Testing Summary**
+- Total test cases: 11
+- Passed: 11
+- Failed: 0
 
+### Authentication and Authorization Testing
+
+| Test ID |        Test Scenario          | Expected Result         | Status |
+| AUTH01  |         Admin login           | Successful login        | PASS |
+| AUTH02  |      User registration        | User account created    | PASS |
+| AUTH03  |          User login           | Successful login        | PASS |
+| AUTH04  |    Admin creates hotel        | Hotel created           | PASS |
+| AUTH05  |    Admin updates hotel        | Hotel updated           | PASS |
+| AUTH06  |    Admin deletes hotel        | Hotel and image deleted | PASS |
+| AUTH07  | User attempts to create hotel | Access denied           | PASS |
+| AUTH08  | User attempts to update hotel | Access denied           | PASS |
+| AUTH09  | User attempts to delete hotel | Access denied           | PASS |
+| AUTH10  |   Guest views all hotels      | Public access allowed   | PASS |
+| AUTH11  | Guest views hotel details     | Public access allowed   | PASS |
+
+**Authentication Testing Summary**
+- Total test cases: 11
+- Passed: 11
+- Failed: 0
+
+### Testing Approach
+
+- Frontend form validation.
+- Backend API testing using Postman.
+- PostgreSQL data verification.
+- Image upload and validation.
+- Hotel CRUD operation testing.
+- Search, filtering and pagination testing.
+- Authentication and role-based authorization testing.
+
+## Future Improvements
+
+- Deploy frontend and backend.
+- Configure production database hosting.
+- Add automated testing.
+- Improve production monitoring and error handling.
+
+## Author
+
+**Project Name:** StayNest – Hotel Management System  
+**Domain:** Full-Stack Web Development  
+**Frontend:** React.js and Redux Toolkit  
+**Backend:** Node.js and Express.js  
+**Database:** PostgreSQL

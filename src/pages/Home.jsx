@@ -13,6 +13,8 @@ const Home = () => {
     const error = useSelector((state) => state.hotels.error);
     const totalHotels = useSelector((state) => state.hotels.totalHotels);
     const totalPages = useSelector((state) => state.hotels.totalPages);
+    const user = useSelector((state) => state.auth.user);
+    const isAdmin = user?.role === "admin";
     const [searchTerm, setSearchTerm] = useState("");
     const [minPrice, setMinPrice] = useState("");
     const [maxPrice, setMaxPrice] = useState("");
@@ -31,19 +33,28 @@ const Home = () => {
     }, [dispatch, searchTerm, minPrice, maxPrice, currentPage]);
     const handlePageChange = (page) => {
         setCurrentPage(page);
+
         document.getElementById("hotel-results")?.scrollIntoView({
             behavior: "smooth",
             block: "start",
         });
     };
+
+    // Delete hotel - Admin only
     const handleDelete = async (id) => {
+        if (!isAdmin) return;
+
         const confirmDelete = window.confirm(
             "Are you sure you want to delete this hotel?"
         );
+
         if (!confirmDelete) return;
+
         try {
             await dispatch(deleteHotelFromDatabase(id)).unwrap();
+
             window.alert("Hotel deleted successfully!");
+
             if (hotels.length === 1 && currentPage > 1) {
                 setCurrentPage((page) => page - 1);
             } else {
@@ -63,12 +74,14 @@ const Home = () => {
             );
         }
     };
+
     const clearFilters = () => {
         setSearchTerm("");
         setMinPrice("");
         setMaxPrice("");
         setCurrentPage(1);
     };
+
     return (
         <>
             <Helmet>
@@ -134,12 +147,15 @@ const Home = () => {
                             </p>
                         </div>
 
-                        <Link
-                            to="/add-hotel"
-                            className="rounded-lg bg-blue-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
-                        >
-                            + Add Hotel
-                        </Link>
+                        {/* Add Hotel - Admin only */}
+                        {isAdmin && (
+                            <Link
+                                to="/add-hotel"
+                                className="rounded-lg bg-blue-600 px-6 py-3 text-center font-semibold text-white transition hover:bg-blue-700"
+                            >
+                                + Add Hotel
+                            </Link>
+                        )}
                     </div>
 
                     {/* Search and Filters */}
@@ -245,7 +261,7 @@ const Home = () => {
                                             </span>
                                         </p>
 
-                                        {/* View Details */}
+                                        {/* View Details - Everyone */}
                                         <Link
                                             to={`/hotel/${hotel.id}`}
                                             className="mt-5 block rounded-lg bg-slate-900 px-4 py-3 text-center font-semibold text-white transition hover:bg-slate-800"
@@ -253,22 +269,26 @@ const Home = () => {
                                             View Details
                                         </Link>
 
-                                        {/* Edit and Delete */}
-                                        <div className="mt-3 grid grid-cols-2 gap-3">
-                                            <Link
-                                                to={`/edit-hotel/${hotel.id}`}
-                                                className="rounded-lg border border-blue-600 px-4 py-2.5 text-center font-semibold text-blue-600 transition hover:bg-blue-50"
-                                            >
-                                                Edit
-                                            </Link>
+                                        {/* Edit and Delete - Admin only */}
+                                        {isAdmin && (
+                                            <div className="mt-3 grid grid-cols-2 gap-3">
+                                                <Link
+                                                    to={`/edit-hotel/${hotel.id}`}
+                                                    className="rounded-lg border border-blue-600 px-4 py-2.5 text-center font-semibold text-blue-600 transition hover:bg-blue-50"
+                                                >
+                                                    Edit
+                                                </Link>
 
-                                            <button
-                                                onClick={() => handleDelete(hotel.id)}
-                                                className="rounded-lg border border-red-500 px-4 py-2.5 font-semibold text-red-500 transition hover:bg-red-50"
-                                            >
-                                                Delete
-                                            </button>
-                                        </div>
+                                                <button
+                                                    onClick={() =>
+                                                        handleDelete(hotel.id)
+                                                    }
+                                                    className="rounded-lg border border-red-500 px-4 py-2.5 font-semibold text-red-500 transition hover:bg-red-50"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        )}
                                     </div>
                                 </article>
                             ))}
@@ -386,6 +406,7 @@ const Home = () => {
 };
 
 export default Home;
+
 
 
 
