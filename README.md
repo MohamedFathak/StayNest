@@ -645,8 +645,8 @@ StayNest was tested using frontend interactions, backend APIs, Postman and Postg
 - Failed: 0
 
 ### Authentication and Authorization Testing
-
 | Test ID |        Test Scenario           |  Expected Result        |Status|
+|  ---    |           ---                  |       ---               | ---  |
 | AUTH01  |        Admin login             | Successful login        | PASS |
 | AUTH02  |    User registration           | User account created    | PASS |
 | AUTH03  |        User login              |  Successful login       | PASS |
@@ -696,6 +696,7 @@ StayNest was tested using frontend interactions, backend APIs, Postman and Postg
 ### Authentication and Authorization Testing
 
 | Test ID |        Test Scenario          | Expected Result         | Status |
+|  ---    |           ---                  |       ---               | ---  |
 | AUTH01  |         Admin login           | Successful login        | PASS |
 | AUTH02  |      User registration        | User account created    | PASS |
 | AUTH03  |          User login           | Successful login        | PASS |
