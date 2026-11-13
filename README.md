@@ -626,18 +626,19 @@ StayNest was tested using frontend interactions, backend APIs, Postman and Postg
 
 ### Hotel CRUD Testing
 
-| Test ID |            Test Scenario                              |      Expected Result       | Status |
-| TC01    |         Add hotel with valid details                  | Hotel created successfully | PASS |
-| TC02    |         Add hotel without hotel title                 | Validation error displayed | PASS |
-| TC03    |         Add hotel without description                 | Validation error displayed | PASS |
-| TC04    |         Add hotel with negative price                 |       Input rejected       | PASS |
-| TC05    |         Add hotel with zero price                     |       Input rejected       | PASS |
-| TC06    |       Add hotel with valid latitude and longitude     |       Hotel saved          | PASS |
-| TC07    |           Enter invalid latitude                      |       Input rejected       | PASS |
-| TC08    |           Enter invalid longitude                     |       Input rejected       | PASS |
-| TC09    |           Edit an existing hotel                      | Hotel information updated  | PASS |
-| TC10    |           Delete an existing hotel                    | Hotel deleted successfully | PASS |
-| TC11    |           Delete a non-existent hotel                 | Hotel Not Found response   | PASS |
+| Test ID |               Test Scenario                 | Expected Result            | Status |
+|  ---    |                    ---                      |        ---                 |  ---   |
+| TC01    | Add hotel with valid details                | Hotel created successfully | PASS |
+| TC02    | Add hotel without hotel title               | Validation error displayed | PASS |
+| TC03    | Add hotel without description               | Validation error displayed | PASS |
+| TC04    | Add hotel with negative price               | Input rejected             | PASS |
+| TC05    | Add hotel with zero price                   | Input rejected             | PASS |
+| TC06    | Add hotel with valid latitude and longitude | Hotel saved                | PASS |
+| TC07    | Enter invalid latitude                      | Input rejected             | PASS |
+| TC08    | Enter invalid longitude                     | Input rejected             | PASS |
+| TC09    | Edit an existing hotel                      | Hotel information updated  | PASS |
+| TC10    | Delete an existing hotel                    | Hotel deleted successfully | PASS |
+| TC11    | Delete a non-existent hotel                 | Hotel Not Found response   | PASS |
 
 **CRUD Testing Summary**
 - Total test cases: 11
@@ -646,7 +647,7 @@ StayNest was tested using frontend interactions, backend APIs, Postman and Postg
 
 ### Authentication and Authorization Testing
 | Test ID |        Test Scenario           |  Expected Result        |Status|
-|  ---    |           ---                  |       ---               | ---  |
+|  ---    |           ---                  |---                      |---   |
 | AUTH01  |        Admin login             | Successful login        | PASS |
 | AUTH02  |    User registration           | User account created    | PASS |
 | AUTH03  |        User login              |  Successful login       | PASS |
@@ -696,7 +697,7 @@ StayNest was tested using frontend interactions, backend APIs, Postman and Postg
 ### Authentication and Authorization Testing
 
 | Test ID |        Test Scenario          | Expected Result         | Status |
-|  ---    |           ---                  |       ---               | ---  |
+|  ---    |           ---                 |        ---              |---   |
 | AUTH01  |         Admin login           | Successful login        | PASS |
 | AUTH02  |      User registration        | User account created    | PASS |
 | AUTH03  |          User login           | Successful login        | PASS |
